@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP32 Simulator — Interactive IoT Playground</title>
+  <meta name="description" content="Browser-based ESP32 simulator with drag-and-drop components, Arduino code editor, and real-time serial monitor." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Toolbar -->
+    <header id="toolbar">
+      <div class="toolbar-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="2" y="6" width="24" height="16" rx="3" stroke="url(#grad1)" stroke-width="2"/>
+              <circle cx="8" cy="14" r="2" fill="url(#grad1)"/>
+              <circle cx="14" cy="14" r="2" fill="url(#grad1)"/>
+              <circle cx="20" cy="14" r="2" fill="url(#grad1)"/>
+              <line x1="5" y1="6" x2="5" y2="3" stroke="url(#grad1)" stroke-width="1.5"/>
+              <line x1="9" y1="6" x2="9" y2="3" stroke="url(#grad1)" stroke-width="1.5"/>
+              <line x1="13" y1="6" x2="13" y2="3" stroke="url(#grad1)" stroke-width="1.5"/>
+              <line x1="19" y1="22" x2="19" y2="25" stroke="url(#grad1)" stroke-width="1.5"/>
+              <line x1="23" y1="22" x2="23" y2="25" stroke="url(#grad1)" stroke-width="1.5"/>
+              <defs>
+                <linearGradient id="grad1" x1="0" y1="0" x2="28" y2="28">
+                  <stop offset="0%" stop-color="#00f5d4"/>
+                  <stop offset="100%" stop-color="#7b61ff"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="logo-text">ESP32 <span class="logo-accent">Simulator</span></span>
+        </div>
+      </div>
+      <div class="toolbar-center">
+        <button id="btn-run" class="toolbar-btn primary" title="Run Simulation">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><polygon points="3,1 14,8 3,15"/></svg>
+          <span>Run</span>
+        </button>
+        <button id="btn-stop" class="toolbar-btn danger" disabled title="Stop Simulation">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="12" height="12" rx="2"/></svg>
+          <span>Stop</span>
+        </button>
+        <button id="btn-reset" class="toolbar-btn" title="Reset">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8a6 6 0 0 1 10.5-4M14 8a6 6 0 0 1-10.5 4"/><polyline points="2,3 2,8 7,8"/></svg>
+          <span>Reset</span>
+        </button>
+        <div class="toolbar-separator"></div>
+        <div class="speed-control">
+          <label>Speed</label>
+          <input type="range" id="speed-slider" min="0.25" max="4" step="0.25" value="1" />
+          <span id="speed-label">1×</span>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <button id="btn-save" class="toolbar-btn" title="Save Circuit">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12.5 13.5h-10a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1h7.5l3.5 3.5v7.5a1 1 0 0 1-1 1z"/><polyline points="4.5,13.5 4.5,8.5 10.5,8.5 10.5,13.5"/></svg>
+          <span>Save</span>
+        </button>
+        <button id="btn-load" class="toolbar-btn" title="Load Circuit">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 10.5v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2"/><polyline points="4.5,6.5 7.5,9.5 10.5,6.5"/><line x1="7.5" y1="1.5" x2="7.5" y2="9.5"/></svg>
+          <span>Load</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Left Sidebar: Component Palette -->
+      <aside id="component-palette">
+        <div class="palette-header">
+          <h2>Components</h2>
+          <div class="palette-search">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="4.5"/><line x1="9.5" y1="9.5" x2="13" y2="13"/></svg>
+            <input type="text" id="component-search" placeholder="Search parts..." />
+          </div>
+        </div>
+        <div id="component-list" class="palette-list">
+          <!-- Components populated by JS -->
+        </div>
+      </aside>
+
+      <!-- Center: Circuit Canvas -->
+      <section id="circuit-area">
+        <div id="circuit-canvas">
+          <div id="canvas-grid"></div>
+          <div id="board-container">
+            <!-- ESP32 board + placed components go here -->
+          </div>
+          <svg id="wire-svg" class="wire-overlay">
+            <!-- Wires drawn here -->
+          </svg>
+          <div id="placed-components">
+            <!-- Dragged components land here -->
+          </div>
+        </div>
+        <div id="canvas-statusbar">
+          <span id="status-indicator" class="status-idle">⬤ Idle</span>
+          <span id="sim-time">0.00s</span>
+          <span id="component-count">0 components</span>
+        </div>
+      </section>
+
+      <!-- Right Panel: Code Editor + Serial Monitor -->
+      <aside id="right-panel">
+        <div class="panel-tabs">
+          <button class="panel-tab active" data-tab="editor">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4,3 1,7 4,11"/><polyline points="10,3 13,7 10,11"/><line x1="8" y1="1" x2="6" y2="13"/></svg>
+            Code
+          </button>
+          <button class="panel-tab" data-tab="serial">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="1" y1="4" x2="13" y2="4"/><line x1="4" y1="4" x2="4" y2="13"/></svg>
+            Serial Monitor
+          </button>
+        </div>
+        <div id="tab-editor" class="tab-content active">
+          <div id="code-editor"></div>
+        </div>
+        <div id="tab-serial" class="tab-content">
+          <div id="serial-toolbar">
+            <button id="btn-clear-serial" class="serial-btn" title="Clear">Clear</button>
+            <label class="serial-autoscroll">
+              <input type="checkbox" id="serial-autoscroll" checked /> Auto-scroll
+            </label>
+          </div>
+          <div id="serial-output"></div>
+          <div id="serial-input-bar">
+            <input type="text" id="serial-input" placeholder="Send to Serial..." />
+            <button id="btn-serial-send">Send</button>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Hidden file input for load -->
+  <input type="file" id="file-input" accept=".json" style="display:none" />
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
